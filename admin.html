@@ -23,7 +23,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-check-compat.js"></script>
 
 <script>
     const firebaseConfig = {
@@ -36,17 +35,8 @@
         appId: "1:8507591213:web:8b04ed5535a6fb226e46a4"
     };
     firebase.initializeApp(firebaseConfig);
-
-    // Initialize App Check
-    const appCheck = firebase.appCheck();
-    appCheck.activate(
-        "6LfY9dIrAAAAAAd6ljtj5rUGLGZrF9jK-SqxOhby", // replace with your site key
-        true // set to true to enable automatic token refresh
-    );
-
     const db = firebase.database();
-</script>
-<script>
+
     let gifts = JSON.parse(localStorage.getItem("gifts")) || {};
 
     function renderTable() {
