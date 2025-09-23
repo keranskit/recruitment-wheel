@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gift Admin Panel</title>
+    <style>
+        body { font-family:sans-serif; padding:20px; }
+        table { border-collapse: collapse; width: 400px; }
+        th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+        input { width: 90%; }
+        button { margin-top:10px; padding:8px 16px; cursor:pointer; }
+    </style>
+</head>
+<body>
+<h1>🎁 Admin Panel</h1>
+<table id="giftTable">
+    <tr><th>Gift</th><th>Count</th><th>Remove</th></tr>
+</table>
+<button onclick="addRow()">+ Add Gift</button>
+<hr>
+<button onclick="sendToDB()">Update Wheel</button>
+
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDOqoQmTmtK_UOv6mjDEz039YkTCj5O01I",
+        authDomain: "rectuitment-wheel.firebaseapp.com",
+        databaseURL: "https://rectuitment-wheel-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "rectuitment-wheel",
+        storageBucket: "rectuitment-wheel.firebasestorage.app",
+        messagingSenderId: "8507591213",
+        appId: "1:8507591213:web:8b04ed5535a6fb226e46a4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+</script>
+<script>
+    let gifts = JSON.parse(localStorage.getItem("gifts")) || {};
+
+    function renderTable() {
+        const table = document.getElementById("giftTable");
+        table.innerHTML = "<tr><th>Gift</th><th>Count</th><th>Remove</th></tr>";
+        Object.entries(gifts).forEach(([name, count]) => {
+            const row = table.insertRow();
+            row.insertCell().innerHTML = `<input value="${name}" onchange="updateGiftName('${name}', this.value)">`;
+            row.insertCell().innerHTML = `<input type="number" value="${count}" min="1" onchange="updateGiftCount('${name}', this.value)">`;
+            row.insertCell().innerHTML = `<button onclick="removeGift('${name}')">X</button>`;
+        });
+        localStorage.setItem("gifts", JSON.stringify(gifts));
+    }
+
+    function addRow() {
+        let newName = "New Gift " + (Object.keys(gifts).length+1);
+        gifts[newName] = 1;
+        renderTable();
+    }
+
+    function updateGiftName(oldName, newName) {
+        if (!newName) return;
+        gifts[newName] = gifts[oldName];
+        delete gifts[oldName];
+        renderTable();
+    }
+
+    function updateGiftCount(name, newCount) {
+        gifts[name] = parseInt(newCount) || 1;
+        renderTable();
+    }
+
+    function removeGift(name) {
+        delete gifts[name];
+        renderTable();
+    }
+
+    function sendToDB() {
+        db.ref('wheel/data').set(gifts)
+            .then(() => alert("✅ Wheel data sent to Firebase!"))
+            .catch(err => alert("❌ Error: " + err));
+    }
+
+    renderTable();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wheel of Fortune</title>
+    <style>
+        body { display:flex; flex-direction:column; align-items:center; font-family:sans-serif; }
+        canvas { margin:20px; }
+        button { padding:10px 20px; font-size:16px; cursor:pointer; }
+    </style>
+</head>
+<body>
+<h1>🎡 Spinning Wheel</h1>
+
+<canvas id="wheel" width="500" height="600"></canvas>
+<button onclick="spin()">Spin</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+
+</script>
+<script>
+
+    const colors = ["#FFD700", "#B22222", "#FF8C00", "#A52A2A", "#FFD700", "#B22222", "#FF8C00", "#A52A2A", "#FFD700", "#B22222", "#FF8C00", "#A52A2A" , "#FFD700", "#B22222", "#FF8C00", "#A52A2A", "#FFD700", "#B22222", "#FF8C00", "#A52A2A",];
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDOqoQmTmtK_UOv6mjDEz039YkTCj5O01I",
+        authDomain: "rectuitment-wheel.firebaseapp.com",
+        databaseURL: "https://rectuitment-wheel-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "rectuitment-wheel",
+        storageBucket: "rectuitment-wheel.firebasestorage.app",
+        messagingSenderId: "8507591213",
+        appId: "1:8507591213:web:8b04ed5535a6fb226e46a4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+
+    let gifts = { "Example Gift": 1 };
+    let slices = [];
+
+    // Evenly distribute duplicates
+    function buildSlices() {
+        let distributed = [];
+        let maxCount = Math.max(...Object.values(gifts));
+        for (let i = 0; i < maxCount; i++) {
+            for (let [name, count] of Object.entries(gifts)) {
+                if (i < count) distributed.push(name);
+            }
+        }
+        return distributed;
+    }
+
+    function drawWheel(rotation=0) {
+        ctx.clearRect(0,0,500,600);
+        const radius = 250;
+        const centerX = 250;
+        const centerY = 350; // shifted down for arrow
+        const sliceAngle = 2 * Math.PI / slices.length;
+
+        // Draw slices
+        slices.forEach((text, i) => {
+            const angle = i * sliceAngle + rotation;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw text
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(angle + sliceAngle/2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#fff";
+            ctx.font = "16px sans-serif";
+            ctx.fillText(text, radius-10, 5);
+            ctx.restore();
+        });
+
+        // Draw arrow (outside, pointing downward)
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius - 20);      // tip pointing downward
+        ctx.lineTo(centerX - 15, centerY - radius - 50); // left corner
+        ctx.lineTo(centerX + 15, centerY - radius - 50); // right corner
+        ctx.closePath();
+        ctx.fillStyle = "#000";
+        ctx.fill();
+    }
+
+    let spinning = false, rotation = 0, speed = 0;
+
+    function spin() {
+        if (spinning || slices.length===0) return;
+        speed = Math.random() * 0.3 + 0.25;
+        spinning = true;
+        animate();
+    }
+
+    function animate() {
+        if (!spinning) return;
+        rotation += speed;
+        speed *= 0.98;
+        drawWheel(rotation);
+        if (speed >= 0.002) {
+            requestAnimationFrame(animate);
+        } else {
+            spinning = false;
+        }
+    }
+
+    db.ref('wheel/data').on('value', snapshot => {
+        gifts = snapshot.val() || {};
+        slices = buildSlices();
+        drawWheel(rotation);
+    });
+
+    drawWheel();
+</script>
+</body>
+</html>
