@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-<h1>🎁 Admin Panel</h1>
+<h1>Admin Panel</h1>
 <table id="giftTable">
     <tr><th>Gift</th><th>Count</th><th>Remove</th></tr>
 </table>
@@ -77,7 +77,7 @@
     function sendToDB() {
         db.ref('wheel/data').set(gifts)
             .then(() => alert("Data sent to wheel!"))
-            .catch(err => alert("❌ Error: " + err));
+            .catch(err => alert("Error: " + err));
     }
 
     renderTable();

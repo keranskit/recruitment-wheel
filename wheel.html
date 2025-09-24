@@ -10,7 +10,6 @@
     </style>
 </head>
 <body>
-<h1>🎡 Spinning Wheel</h1>
 
 <canvas id="wheel" width="500" height="600"></canvas>
 <button onclick="spin()">Spin</button>
@@ -21,8 +20,7 @@
 
 </script>
 <script>
-
-    const colors = ["#FFD700", "#B22222", "#FF8C00", "#A52A2A", "#FFD700", "#B22222", "#FF8C00", "#A52A2A", "#FFD700", "#B22222", "#FF8C00", "#A52A2A" , "#FFD700", "#B22222", "#FF8C00", "#A52A2A", "#FFD700", "#B22222", "#FF8C00", "#A52A2A",];
+    const colors = ["#fcb410", "#f6901e", "#ed3224", "#be1e2d", "#fcb410", "#f6901e", "#ed3224", "#be1e2d", "#fcb410", "#f6901e", "#ed3224", "#be1e2d", "#fcb410", "#f6901e", "#ed3224", "#be1e2d"];
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
 
@@ -76,8 +74,8 @@
             ctx.translate(centerX, centerY);
             ctx.rotate(angle + sliceAngle/2);
             ctx.textAlign = "right";
-            ctx.fillStyle = "#fff";
-            ctx.font = "16px sans-serif";
+            ctx.fillStyle = "#000000";
+            ctx.font = "28px roboto";
             ctx.fillText(text, radius-10, 5);
             ctx.restore();
         });
