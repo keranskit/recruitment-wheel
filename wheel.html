@@ -108,12 +108,48 @@
     }
 
     let spinning = false, rotation = 0, speed = 0;
+    function animateTo(targetRotation) {
+        const duration = 4000; // total spin duration in ms
+        const startRotation = rotation;
+        const startTime = performance.now();
+
+        function step(now) {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / duration, 1); // 0 → 1
+            // cubic ease-out: smooth slow-down
+            const eased = 1 - Math.pow(1 - t, 3);
+
+            rotation = startRotation + (targetRotation - startRotation) * eased;
+            drawWheel(rotation);
+
+            if (t < 1) {
+                requestAnimationFrame(step);
+            } else {
+                spinning = false;
+                celebrate(); // confetti
+                const sliceAngle = 2 * Math.PI / slices.length;
+                const winnerIndex = Math.floor((rotation % (2 * Math.PI)) / sliceAngle);
+                console.log("Winner:", slices[winnerIndex]);
+            }
+        }
+
+        requestAnimationFrame(step);
+    }
 
     function spin() {
-        if (spinning || slices.length===0) return;
-        speed = Math.random() * 0.3 + 0.25;
+        if (spinning || slices.length === 0) return;
+
+        const sliceAngle = 2 * Math.PI / slices.length;
+
+        // Pick a random slice as the winner
+        const winnerIndex = Math.floor(Math.random() * slices.length);
+
+        // Add a few full rotations + target slice offset
+        const extraSpins = Math.floor(Math.random() * 3) + 5; // 5-7 full spins
+        const targetRotation = rotation + extraSpins * 2 * Math.PI + winnerIndex * sliceAngle + sliceAngle/2;
+
         spinning = true;
-        animate();
+        animateTo(targetRotation);
     }
 
     function celebrate() {
@@ -146,19 +182,6 @@
                 requestAnimationFrame(frame);
             }
         }());
-    }
-
-    function animate() {
-        if (!spinning) return;
-        rotation += speed;
-        speed *= 0.98;
-        drawWheel(rotation);
-        if (speed >= 0.002) {
-            requestAnimationFrame(animate);
-        } else {
-            spinning = false;
-            celebrate(); // 🎉 call when spin ends
-        }
     }
 
     db.ref('wheel/data').on('value', snapshot => {
