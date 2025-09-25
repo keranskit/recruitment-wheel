@@ -69,11 +69,23 @@
         return distributed;
     }
 
-    function drawWheel(rotation=0) {
-        ctx.clearRect(0,0,500,600);
+    function normalizeAngle(a) {
+        const twoPi = 2 * Math.PI;
+        return ((a % twoPi) + twoPi) % twoPi;
+    }
+
+    function drawWheel(rotation = 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         const radius = 250;
         const centerX = 250;
-        const centerY = 350; // shifted down for arrow
+        const centerY = 350;
+
+        if (!slices || slices.length === 0) {
+            // nothing to draw
+            // (optional: draw a placeholder)
+            return;
+        }
+
         const sliceAngle = 2 * Math.PI / slices.length;
 
         // Draw slices
@@ -89,15 +101,15 @@
             // Draw text
             ctx.save();
             ctx.translate(centerX, centerY);
-            ctx.rotate(angle + sliceAngle/2);
+            ctx.rotate(angle + sliceAngle / 2);
             ctx.textAlign = "right";
             ctx.fillStyle = "#000000";
             ctx.font = "28px 'Times New Roman'";
-            ctx.fillText(text, radius-10, 5);
+            ctx.fillText(text, radius - 10, 5);
             ctx.restore();
         });
 
-        // Draw arrow (outside, pointing downward)
+        // Draw arrow (outside, pointing downward toward wheel — arrow tip located above wheel)
         ctx.beginPath();
         ctx.moveTo(centerX, centerY - radius - 20);      // tip pointing downward
         ctx.lineTo(centerX - 15, centerY - radius - 50); // left corner
@@ -107,17 +119,17 @@
         ctx.fill();
     }
 
-    let spinning = false, rotation = 0, speed = 0;
-    function animateTo(targetRotation) {
-        const duration = 4000; // total spin duration in ms
+    let spinning = false, rotation = Math.random(), speed = 0;
+
+    function animateTo(targetRotation, winnerIndex) {
+        const duration = 4000; // ms
         const startRotation = rotation;
         const startTime = performance.now();
 
         function step(now) {
             const elapsed = now - startTime;
-            const t = Math.min(elapsed / duration, 1); // 0 → 1
-            // cubic ease-out: smooth slow-down
-            const eased = 1 - Math.pow(1 - t, 3);
+            const t = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3); // cubic ease-out
 
             rotation = startRotation + (targetRotation - startRotation) * eased;
             drawWheel(rotation);
@@ -125,11 +137,11 @@
             if (t < 1) {
                 requestAnimationFrame(step);
             } else {
+                rotation = targetRotation;
+                drawWheel(rotation);
+
                 spinning = false;
-                celebrate(); // confetti
-                const sliceAngle = 2 * Math.PI / slices.length;
-                const winnerIndex = Math.floor((rotation % (2 * Math.PI)) / sliceAngle);
-                console.log("Winner:", slices[winnerIndex]);
+                celebrate();
             }
         }
 
@@ -137,19 +149,28 @@
     }
 
     function spin() {
-        if (spinning || slices.length === 0) return;
+        if (spinning || !slices || slices.length === 0) return;
 
         const sliceAngle = 2 * Math.PI / slices.length;
 
-        // Pick a random slice as the winner
+        // Pick winner first
         const winnerIndex = Math.floor(Math.random() * slices.length);
 
-        // Add a few full rotations + target slice offset
-        const extraSpins = Math.floor(Math.random() * 3) + 5; // 5-7 full spins
-        const targetRotation = rotation + extraSpins * 2 * Math.PI + winnerIndex * sliceAngle + sliceAngle/2;
+        // Middle angle of winner slice (in wheel coords)
+        const winnerMidAngle = winnerIndex * sliceAngle + sliceAngle / 2;
+
+        // Arrow is at the TOP (12 o'clock) = -90deg = -π/2
+        const arrowAngle = -Math.PI / 2;
+
+        // Rotation needed so winnerMidAngle aligns with arrowAngle
+        const desiredRotationOffset = normalizeAngle(arrowAngle - winnerMidAngle);
+
+        // Add extra full spins
+        const extraSpins = Math.floor(Math.random() * 3) + 5;
+        const targetRotation = rotation + extraSpins * 2 * Math.PI + desiredRotationOffset;
 
         spinning = true;
-        animateTo(targetRotation);
+        animateTo(targetRotation, winnerIndex);
     }
 
     function celebrate() {
