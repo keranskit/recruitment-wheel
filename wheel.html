@@ -35,9 +35,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
-</script>
 <script>
     const colors = ["#fcb410", "#f6901e", "#ed3224", "#be1e2d", "#fcb410", "#f6901e", "#ed3224", "#be1e2d", "#fcb410", "#f6901e", "#ed3224", "#be1e2d", "#fcb410", "#f6901e", "#ed3224", "#be1e2d"];
     const canvas = document.getElementById("wheel");
@@ -117,6 +116,38 @@
         animate();
     }
 
+    function celebrate() {
+        // burst
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+
+        // fireworks style
+        const duration = 2 * 1000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 3,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 }
+            });
+            confetti({
+                particleCount: 3,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 }
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+
     function animate() {
         if (!spinning) return;
         rotation += speed;
@@ -126,6 +157,7 @@
             requestAnimationFrame(animate);
         } else {
             spinning = false;
+            celebrate(); // 🎉 call when spin ends
         }
     }
 
