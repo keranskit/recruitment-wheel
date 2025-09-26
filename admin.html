@@ -37,7 +37,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let gifts = JSON.parse(localStorage.getItem("gifts")) || {};
+    let gifts = {};
 
     function renderTable() {
         const table = document.getElementById("giftTable");
@@ -80,7 +80,14 @@
             .catch(err => alert("Error: " + err));
     }
 
-    renderTable();
+    db.ref('wheel/data').on("value", snapshot => {
+        if (snapshot.exists()) {
+            gifts = snapshot.val() || {};
+        } else {
+            gifts = {};
+        }
+        renderTable();
+    });
 </script>
 </body>
 </html>
